@@ -1,0 +1,29 @@
+name: CD
+
+on:
+  push:
+    branchs:
+      - main
+
+jobs:
+  Deploy:
+    runs-on: ubuntu-20.04
+
+    env:
+      HEROKU_API_KEY: ${{secrets.HEROKU_API_KEY}}
+      APP_NAME: shortcut-with-notion
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Heroku install
+        run: curl https://cli-assets.heroku.com/install-ubuntu.sh | sh
+
+      - name: Login to Heroku Container registry
+        run: heroku container:login
+
+      - name: Build and push
+        run: heroku container:push --app "${{ env.APP_NAME }}" web
+
+      - name: Release
+        run: heroku container:release --app "${{ env.APP_NAME }}" web
