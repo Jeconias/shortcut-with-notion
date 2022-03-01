@@ -1,6 +1,6 @@
 {
   "name": "shortcut-with-notion",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "dist/index.js",
   "author": "Jeconias Santos, <https://github.com/jeconias>",
   "license": "MIT",

@@ -48,7 +48,12 @@ class ShortcutController {
       const storyId = story.getId();
       const page = pages?.find((p) => p.storyId === storyId);
 
-      const notionStory = new StoryNotion(story);
+      const notionStory = new StoryNotion(
+        story,
+        pagesFromNotion?.results?.find(
+          (p) => p.properties?.ID?.number === storyId
+        )?.properties
+      );
 
       if (page) {
         // Update

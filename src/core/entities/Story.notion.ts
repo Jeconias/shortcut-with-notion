@@ -1,9 +1,10 @@
 import {
   NotionTableColumn,
+  StoryTableType,
   TableTypeMultSelectItem,
 } from '~/src/integrations/notion/notion.types';
 import StoryShortcut from './Story.shortcut';
-import { format, utcToZonedTime } from 'date-fns-tz';
+import { format, utcToZonedTime, zonedTimeToUtc } from 'date-fns-tz';
 
 type ColumnIDParams = {
   number: number;
@@ -22,20 +23,38 @@ type ColumnURLParams = {
 };
 
 type ColumnCompletedParams = {
-  start: string | Date;
+  start: string | Date | null;
 };
 
 class StoryNotion {
   private story: StoryShortcut | undefined;
+  private storyTable: StoryTableType | undefined;
 
-  constructor(story: StoryShortcut) {
+  constructor(story: StoryShortcut, storyTable: StoryTableType | undefined) {
     this.story = story;
+    this.storyTable = storyTable;
   }
 
   public toProperties = () => {
     const story = this.story?.getStory();
 
     if (!story) return undefined;
+
+    const dateFromNotion = this.storyTable?.Completed?.date?.start
+      ? utcToZonedTime(
+          this.storyTable.Completed.date.start,
+          'America/Sao_Paulo'
+        )
+      : null;
+
+    const dateFromShortcut = story.completedAt
+      ? utcToZonedTime(story.completedAt, 'America/Sao_Paulo')
+      : null;
+
+    const start =
+      dateFromNotion && dateFromShortcut && dateFromShortcut > dateFromNotion
+        ? dateFromNotion
+        : dateFromShortcut;
 
     return {
       ...this.storyColumnID({ number: story.id! }),
@@ -50,7 +69,10 @@ class StoryNotion {
         multi_select: story.type ? [{ name: story.type }] : undefined,
       }),
       ...this.storyColumnURL({ url: story.url! }),
-      ...this.storyColumnDate({ start: story.completedAt! }),
+      ...this.storyColumnDate({
+        start:
+          start && story.status?.toLowerCase() === 'completed' ? start : null,
+      }),
     };
   };
 
@@ -139,15 +161,17 @@ class StoryNotion {
   private storyColumnDate = ({
     start,
   }: ColumnCompletedParams): NotionTableColumn => {
-    if (!start) return {};
+    if (start === undefined) return {};
 
     const column = {
       Completed: {
         type: 'date',
-        date: {
-          start: utcToZonedTime(start, 'America/Sao_Paulo'),
-          time_zone: 'America/Sao_Paulo',
-        },
+        date:
+          start === null
+            ? null
+            : {
+                start,
+              },
       },
     } as NotionTableColumn;
 

@@ -6,7 +6,7 @@ import WebhookGuard from './middlewares/WebhookGuard';
 
 const app = new App();
 
-app.server.get('/', (_, res) => res.json({ version: '1.0.0', done: 'yes!' }));
+app.server.get('/', (_, res) => res.json({ version: '1.0.1', done: 'yes!' }));
 app.server.post('/', WebhookGuard, ShortcutController.webhook);
 app.server.use(HandlerError);
 

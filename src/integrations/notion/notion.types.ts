@@ -17,9 +17,9 @@ export type QueryNotionResponse<T> = {
   results: QueryNotionResult<T>[];
 };
 
-type TableTypeValues = 'multi_select' | 'people' | 'title' | 'number';
+type TableTypeValues = 'multi_select' | 'people' | 'title' | 'number' | 'date';
 
-type ReturnAsProperty = Exclude<TableTypeValues, 'number'>;
+type ReturnAsProperty = Exclude<TableTypeValues, 'number' | 'date'>;
 
 type TableTypeTitle = {
   type: 'title';
@@ -57,11 +57,26 @@ type TableTypeNumber = {
   number: number;
 };
 
-type TableTypesTuple = [TableTypeTitle, TableTypeMultSelect, TableTypeNumber];
+type TableTypeDate = {
+  id: string;
+  type: 'date';
+  date: {
+    start: string;
+    end: null;
+    time_zone: null;
+  } | null;
+};
 
-type TableTypesLimitTuple = [never, 0, 1, 2];
+type TableTypesTuple = [
+  TableTypeTitle,
+  TableTypeMultSelect,
+  TableTypeNumber,
+  TableTypeDate
+];
 
-type ReturnTableType<Type, Cursor extends number = 3> = [Cursor] extends [never]
+type TableTypesLimitTuple = [never, 0, 1, 2, 3];
+
+type ReturnTableType<Type, Cursor extends number = 4> = [Cursor] extends [never]
   ? never
   : TableTypesTuple[Cursor] extends { type: Type }
   ? TableTypesTuple[Cursor]
@@ -83,4 +98,5 @@ export type StoryTableType = {
   Labels: TableType<'multi_select'>;
   Status: TableType<'multi_select'>;
   Type: TableType<'multi_select'>;
+  Completed: TableType<'date'>;
 };
